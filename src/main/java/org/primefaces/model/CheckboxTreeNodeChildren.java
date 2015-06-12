@@ -196,7 +196,12 @@ public class CheckboxTreeNodeChildren extends TreeNodeList {
             return false;
         }
     }
-    
+
+    @Override
+    public void updateRowKeys() {
+        updateRowKeys(parent);
+    }
+
     private void updateRowKeys(TreeNode node) {
         int childCount = node.getChildCount();
         if(childCount > 0) {

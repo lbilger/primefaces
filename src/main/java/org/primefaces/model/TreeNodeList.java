@@ -20,12 +20,16 @@ import java.util.ArrayList;
 public class TreeNodeList extends ArrayList<TreeNode> {
 
     /**
-     * Optimized set implementation to be used in sorting
+     * Optimized set implementation to be used in sorting.
      * @param index index of the element to replace
      * @param node node to be stored at the specified position
      * @return the node previously at the specified position
      */
     public TreeNode setSibling(int index, TreeNode node) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void updateRowKeys() {
         throw new UnsupportedOperationException();
     }
 }

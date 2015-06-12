@@ -20,15 +20,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import javax.el.ValueExpression;
 
+import javax.el.ValueExpression;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
+
 import org.primefaces.component.api.DynamicColumn;
 import org.primefaces.component.api.UIColumn;
 import org.primefaces.component.api.UITree;
-
 import org.primefaces.component.column.Column;
 import org.primefaces.component.columngroup.ColumnGroup;
 import org.primefaces.component.columns.Columns;
@@ -43,6 +43,8 @@ import org.primefaces.renderkit.RendererUtils;
 import org.primefaces.util.SharedStringBuilder;
 import org.primefaces.util.TreeUtils;
 import org.primefaces.util.WidgetBuilder;
+
+import static java.lang.Math.min;
 
 public class TreeTableRenderer extends CoreRenderer {
 
@@ -131,7 +133,7 @@ public class TreeTableRenderer extends CoreRenderer {
             TreeNode node = tt.getRowNode();
             node.setExpanded(true);
             
-            encodeNodeChildren(context, tt, node);
+            encodeNodeChildren(context, tt, node, 0, node.getChildCount());
         }
         else if(tt.isSortRequest(context)) {
             encodeSort(context, tt);
@@ -375,7 +377,13 @@ public class TreeTableRenderer extends CoreRenderer {
         }
         
 		if(root != null) {
-            encodeNodeChildren(context, tt, root);
+            int beginIndex = tt.getFirst();
+            int rows = tt.getRows();
+            int endIndex = root.getChildCount();
+            if (rows > 0) {
+                endIndex = min(endIndex, beginIndex + rows);
+            }
+            encodeNodeChildren(context, tt, root, beginIndex, endIndex);
 		}
 
         tt.setRowKey(null);
@@ -480,7 +488,7 @@ public class TreeTableRenderer extends CoreRenderer {
         writer.endElement("tr");
 
         if(treeNode.isExpanded()) {
-            encodeNodeChildren(context, tt, treeNode);
+            encodeNodeChildren(context, tt, treeNode, 0, treeNode.getChildCount());
         }
     }
     
@@ -541,11 +549,11 @@ public class TreeTableRenderer extends CoreRenderer {
         writer.endElement("th");
     }
         
-    protected void encodeNodeChildren(FacesContext context, TreeTable tt, TreeNode treeNode) throws IOException {
-        int childCount = treeNode.getChildCount();
-        if(childCount > 0) {
+    protected void encodeNodeChildren(FacesContext context, TreeTable tt, TreeNode treeNode, int beginIndex,
+            int endIndex) throws IOException {
+        if(endIndex > beginIndex) {
             List<TreeNode> children = treeNode.getChildren();
-            for(int i = 0; i < childCount; i++) {
+            for(int i = beginIndex; i < endIndex; i++) {
                 encodeNode(context, tt, children.get(i));
             }
         }
