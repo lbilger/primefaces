@@ -23,6 +23,7 @@ import org.primefaces.component.column.Column;
 import org.primefaces.component.columngroup.ColumnGroup;
 import org.primefaces.component.datatable.DataTable;
 import org.primefaces.component.row.Row;
+import org.primefaces.component.rowexpansion.RowExpansion;
 import org.primefaces.renderkit.CoreRenderer;
 
 public class SubTableRenderer extends CoreRenderer {
@@ -31,23 +32,34 @@ public class SubTableRenderer extends CoreRenderer {
 	public void encodeEnd(FacesContext context, UIComponent component) throws IOException {
 		SubTable table = (SubTable) component;
 		int rowCount = table.getRowCount();
-
-		encodeHeader(context, table);
+        String additionalRowStyleClass = null;
+        if (table.getParent() instanceof RowExpansion) {
+            additionalRowStyleClass = DataTable.EXPANDED_ROW_CONTENT_CLASS;
+            String rowExpansionStyleClass = ((RowExpansion) table.getParent()).getStyleClass();
+            if (rowExpansionStyleClass != null) {
+                additionalRowStyleClass = additionalRowStyleClass + " " + rowExpansionStyleClass;
+            }
+        }
+        encodeHeader(context, table, additionalRowStyleClass);
 
 		for (int i = 0; i < rowCount; i++) {
-            encodeRow(context, table, i);
+            encodeRow(context, table, i, additionalRowStyleClass);
 		}
 
 		encodeFooter(context, table);
 	}
 
-	public void encodeHeader(FacesContext context, SubTable table) throws IOException {
+	public void encodeHeader(FacesContext context, SubTable table, String additionalRowStyleClass) throws IOException {
 		ResponseWriter writer = context.getResponseWriter();
 		UIComponent header = table.getFacet("header");
 
-		if (header != null) {
+        String rowStyleClass = "ui-widget-header";
+        if (additionalRowStyleClass != null) {
+            rowStyleClass = rowStyleClass + " " + additionalRowStyleClass;
+        }
+        if (header != null) {
 			writer.startElement("tr", null);
-			writer.writeAttribute("class", "ui-widget-header", null);
+			writer.writeAttribute("class", rowStyleClass, null);
 
 			writer.startElement("td", null);
 			writer.writeAttribute("class", DataTable.SUBTABLE_HEADER, null);
@@ -66,7 +78,7 @@ public class SubTableRenderer extends CoreRenderer {
 					Row headerRow = (Row) child;
 
 					writer.startElement("tr", null);
-					writer.writeAttribute("class", "ui-widget-header", null);
+					writer.writeAttribute("class", rowStyleClass, null);
 
 					for (UIComponent headerRowChild : headerRow.getChildren()) {
 						if (headerRowChild.isRendered() && headerRowChild instanceof Column) {
@@ -81,7 +93,7 @@ public class SubTableRenderer extends CoreRenderer {
 		}
 	}
 
-	public void encodeRow(FacesContext context, SubTable table, int rowIndex) throws IOException {
+	public void encodeRow(FacesContext context, SubTable table, int rowIndex, String additionalRowStyleClass) throws IOException {
 		table.setRowIndex(rowIndex);
 		if (!table.isRowAvailable()) {
 			return;
@@ -92,7 +104,11 @@ public class SubTableRenderer extends CoreRenderer {
 
 		writer.startElement("tr", null);
 		writer.writeAttribute("id", clientId + "_row_" + rowIndex, null);
-		writer.writeAttribute("class", DataTable.ROW_CLASS, null);
+        String rowStyleClass = DataTable.ROW_CLASS;
+        if (additionalRowStyleClass != null) {
+            rowStyleClass = rowStyleClass + " " + additionalRowStyleClass;
+        }
+        writer.writeAttribute("class", rowStyleClass, null);
 
 		for (Column column : table.getColumns()) {
 			String style = column.getStyle();
@@ -151,7 +167,7 @@ public class SubTableRenderer extends CoreRenderer {
 			}
 		}
 	}
-    
+
     protected void encodeFacetColumn(FacesContext context, SubTable table, Column column, String facetName, String styleClass, String text) throws IOException {
         if (!column.isRendered()) {
 			return;

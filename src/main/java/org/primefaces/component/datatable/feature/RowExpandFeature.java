@@ -54,17 +54,21 @@ public class RowExpandFeature implements DataTableFeature {
                 context.getExternalContext().getRequestMap().put(rowIndexVar, rowIndex);
             }
 
-            writer.startElement("tr", null);
-            writer.writeAttribute("class", styleClass, null);
+            if (rowExpansion.getSubTable() != null) {
+                rowExpansion.getSubTable().encodeAll(context);
+            } else {
+                writer.startElement("tr", null);
+                writer.writeAttribute("class", styleClass, null);
 
-            writer.startElement("td", null);
-            writer.writeAttribute("colspan", table.getColumnsCount(), null);
+                writer.startElement("td", null);
+                writer.writeAttribute("colspan", table.getColumnsCount(), null);
 
-            table.getRowExpansion().encodeAll(context);
+                rowExpansion.encodeAll(context);
 
-            writer.endElement("td");
+                writer.endElement("td");
 
-            writer.endElement("tr");
+                writer.endElement("tr");
+            }
         }
     }
 
